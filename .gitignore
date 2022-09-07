@@ -30,3 +30,5 @@ calc.go
 web
 
 .resources
+
+./configs
