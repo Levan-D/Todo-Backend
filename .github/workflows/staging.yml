@@ -1,0 +1,78 @@
+name: CI-Staging
+
+on:
+  push:
+    branches: [ blank ]
+  pull_request:
+    branches: [ blank ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: GoLang install
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Download tags
+        run: git fetch --prune --unshallow --tags
+
+      - name: Debug
+        run: |
+          pwd
+          echo ${HOME}
+          echo ${GITHUB_WORKSPACE}
+          echo ${GOPATH}
+          echo ${GOROOT}
+        env:
+          GOPATH: /home/runner/work/todo/go
+
+      - name: Build services
+        run: |
+          export PATH=$(go env GOPATH)/bin:$PATH
+          go install github.com/gobuffalo/packr/v2/packr2@latest
+          go install github.com/swaggo/swag/cmd/swag@latest
+          make build/linux
+        env:
+          GOPATH: /home/runner/work/todo/go
+
+      - name: Get current datetime
+        uses: 1466587594/get-current-time@v2
+        id: current-datetime
+        with:
+          format: YYYYMMDDHHMMSS
+          utcOffset: "+04:00"
+
+      # Deploy to Staging Server
+      - name: Staging Server - Upload
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: ".bin/todo-app"
+          target: "/tmp"
+          strip_components: 1
+
+      - name: Staging Server - Deploy
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            rm -rf /tmp/.todo-archived
+            mkdir -p /tmp/.todo-archived
+            systemctl stop todo-app
+            mv /usr/bin/todo-app /tmp/.todo-archived/todo-app-${{ steps.current-datetime.outputs.formattedTime }}
+            mv /tmp/todo-app /usr/bin/todo-app
+            chown -R root:root /usr/bin/todo-app
+            /usr/bin/todo-app migrate up
+            systemctl start todo-app
