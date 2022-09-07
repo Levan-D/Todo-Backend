@@ -11,7 +11,7 @@ import (
 
 func Run(runServer func()) {
 	app := &cli.App{
-		Name:                   "loyalty-billing",
+		Name:                   "todo",
 		Usage:                  "usage description",
 		UseShortOptionHandling: false,
 		Action: func(context *cli.Context) error {

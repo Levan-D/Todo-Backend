@@ -35,12 +35,6 @@ type Config struct {
 		Password string `yaml:"password"`
 		DBName   string `yaml:"dbname"`
 	} `yaml:"database"`
-	RabbitMQ struct {
-		Host     string `yaml:"host"`
-		Port     uint16 `yaml:"port"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-	} `yaml:"rabbitmq"`
 	Redis struct {
 		Host     string `yaml:"host"`
 		Port     uint16 `yaml:"port"`
@@ -59,47 +53,6 @@ type Config struct {
 		Username string `yaml:"username"`
 		Password string `yaml:"password"`
 	} `yaml:"smtp"`
-	AWS struct {
-		S3 struct {
-			Region          string `yaml:"region"`
-			AccessKeyID     string `yaml:"accessKeyId"`
-			SecretAccessKey string `yaml:"secretAccessKey"`
-			Bucket          string `yaml:"bucket"`
-		} `yaml:"aws"`
-	} `yaml:"aws"`
-	BranchIO struct {
-		Key         string `yaml:"key"`
-		Secret      string `yaml:"secret"`
-		AppID       string `yaml:"appId"`
-		AccessToken string `yaml:"accessToken"`
-	} `yaml:"branchio"`
-	TBCCheckout struct {
-		ClientID     string `yaml:"clientId"`
-		ClientSecret string `yaml:"clientSecret"`
-		APIKey       string `yaml:"apiKey"`
-	} `yaml:"tbcCheckout"`
-	Gateway struct {
-		Firebase struct {
-			ProjectID   string `yaml:"projectId"`
-			DatabaseURL string `yaml:"databaseUrl"`
-			APIKey      string `yaml:"apiKey"`
-		} `yaml:"firebase"`
-		Facebook struct {
-			ClientID     string `yaml:"clientId"`
-			ClientSecret string `yaml:"clientSecret"`
-		} `yaml:"facebook"`
-		Google struct {
-			ClientID        string `yaml:"clientId"`
-			ClientSecret    string `yaml:"clientSecret"`
-			ClientIOSID     string `yaml:"clientIosId"`
-			ClientAndroidID string `yaml:"clientAndroidId"`
-		} `yaml:"google"`
-		Apple struct {
-			TeamID   string `yaml:"teamId"`
-			KeyID    string `yaml:"keyId"`
-			ClientID string `yaml:"clientId"`
-		} `yaml:"apple"`
-	} `yaml:"gateway"`
 }
 
 func init() {
@@ -127,8 +80,8 @@ func init() {
 		IsDevelopment = false
 
 		directories = map[string]string{
-			"config": "/etc/loyalty",
-			"log":    "/var/log/loyalty",
+			"config": "/etc/todo",
+			"log":    "/var/log/todo",
 			"tmp":    "/tmp",
 		}
 	}
@@ -197,22 +150,6 @@ func setConfigFromEnv(config *Config) {
 	if os.Getenv("DATABASE_PASSWORD") != "" {
 		config.Database.Password = os.Getenv("DATABASE_PASSWORD")
 	}
-	if os.Getenv("RABBITMQ_HOST") != "" {
-		config.RabbitMQ.Host = os.Getenv("RABBITMQ_HOST")
-	}
-	if os.Getenv("RABBITMQ_PORT") != "" {
-		n, err := strconv.ParseUint(os.Getenv("RABBITMQ_PORT"), 10, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		config.RabbitMQ.Port = uint16(n)
-	}
-	if os.Getenv("RABBITMQ_USERNAME") != "" {
-		config.RabbitMQ.Username = os.Getenv("RABBITMQ_USERNAME")
-	}
-	if os.Getenv("RABBITMQ_PASSWORD") != "" {
-		config.RabbitMQ.Password = os.Getenv("RABBITMQ_PASSWORD")
-	}
 	if os.Getenv("DATABASE_DBNAME") != "" {
 		config.Database.DBName = os.Getenv("DATABASE_DBNAME")
 	}
@@ -248,54 +185,6 @@ func setConfigFromEnv(config *Config) {
 			log.Fatal(err)
 		}
 		config.JWT.RefreshTTL = t
-	}
-	if os.Getenv("AWS_S3_REGION") != "" {
-		config.AWS.S3.Region = os.Getenv("AWS_S3_REGION")
-	}
-	if os.Getenv("AWS_S3_ACCESS_KEY_ID") != "" {
-		config.AWS.S3.AccessKeyID = os.Getenv("AWS_S3_ACCESS_KEY_ID")
-	}
-	if os.Getenv("AWS_S3_SECRET_ACCESS_KEY") != "" {
-		config.AWS.S3.SecretAccessKey = os.Getenv("AWS_S3_SECRET_ACCESS_KEY")
-	}
-	if os.Getenv("AWS_S3_BUCKET") != "" {
-		config.AWS.S3.Bucket = os.Getenv("AWS_S3_BUCKET")
-	}
-	if os.Getenv("GATEWAY_FIREBASE_PROJECT_ID") != "" {
-		config.Gateway.Firebase.ProjectID = os.Getenv("GATEWAY_FIREBASE_PROJECT_ID")
-	}
-	if os.Getenv("GATEWAY_FIREBASE_DATABASE_URL") != "" {
-		config.Gateway.Firebase.DatabaseURL = os.Getenv("GATEWAY_FIREBASE_DATABASE_URL")
-	}
-	if os.Getenv("GATEWAY_FIREBASE_API_KEY") != "" {
-		config.Gateway.Firebase.APIKey = os.Getenv("GATEWAY_FIREBASE_API_KEY")
-	}
-	if os.Getenv("GATEWAY_FACEBOOK_CLIENT_ID") != "" {
-		config.Gateway.Facebook.ClientID = os.Getenv("GATEWAY_FACEBOOK_CLIENT_ID")
-	}
-	if os.Getenv("GATEWAY_FACEBOOK_CLIENT_SECRET") != "" {
-		config.Gateway.Facebook.ClientSecret = os.Getenv("GATEWAY_FACEBOOK_CLIENT_SECRET")
-	}
-	if os.Getenv("GATEWAY_GOOGLE_CLIENT_ID") != "" {
-		config.Gateway.Google.ClientID = os.Getenv("GATEWAY_GOOGLE_CLIENT_ID")
-	}
-	if os.Getenv("GATEWAY_GOOGLE_CLIENT_SECRET") != "" {
-		config.Gateway.Google.ClientSecret = os.Getenv("GATEWAY_GOOGLE_CLIENT_SECRET")
-	}
-	if os.Getenv("GATEWAY_GOOGLE_CLIENT_IOS_ID") != "" {
-		config.Gateway.Google.ClientIOSID = os.Getenv("GATEWAY_GOOGLE_CLIENT_IOS_ID")
-	}
-	if os.Getenv("GATEWAY_GOOGLE_CLIENT_ANDROID_ID") != "" {
-		config.Gateway.Google.ClientAndroidID = os.Getenv("GATEWAY_GOOGLE_CLIENT_ANDROID_ID")
-	}
-	if os.Getenv("GATEWAY_APPLE_TEAM_ID") != "" {
-		config.Gateway.Apple.TeamID = os.Getenv("GATEWAY_APPLE_TEAM_ID")
-	}
-	if os.Getenv("GATEWAY_APPLE_KEY_ID") != "" {
-		config.Gateway.Apple.KeyID = os.Getenv("GATEWAY_APPLE_KEY_ID")
-	}
-	if os.Getenv("GATEWAY_APPLE_CLIENT_ID") != "" {
-		config.Gateway.Apple.ClientID = os.Getenv("GATEWAY_APPLE_CLIENT_ID")
 	}
 }
 
