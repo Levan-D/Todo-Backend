@@ -20,6 +20,7 @@ type Repository interface {
 	FindByForgotConfirmationCode(confirmationCode string) (domain.User, error)
 	UpdatePasswordByConfirmationCode(confirmationCode string, hashPassword string) error
 	CleanResetData(confirmationCode string) error
+	CreateList(data domain.List) error
 }
 
 func NewRepository(db *gorm.DB) Repository {
@@ -97,6 +98,15 @@ func (r *repository) CleanResetData(confirmationCode string) error {
 	}
 
 	err = r.db.Model(&domain.User{}).Where("reset_password_code = ?", confirmationCode).Update("reset_password_code", nil).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r repository) CreateList(data domain.List) error {
+	err := r.db.Create(&data).Error
 	if err != nil {
 		return err
 	}

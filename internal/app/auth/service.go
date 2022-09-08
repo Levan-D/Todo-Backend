@@ -91,6 +91,14 @@ func (s *service) SingUp(input SignUpInput) (uuid.UUID, error) {
 		return uuid.UUID{}, errors.StatusInternalServer.LocaleWrapf(err, "cannot be created new user", errors.LocaleUndefined)
 	}
 
+	// when user register, create default list
+	s.repository.CreateList(domain.List{
+		UserID:     nil,
+		Title:      "General",
+		Position:   1,
+		IsReminded: utils.NewFalse(),
+	})
+
 	return user.ID, nil
 }
 
