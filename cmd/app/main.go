@@ -34,7 +34,7 @@ import (
 // @contact.url https://todo.lan
 // @contact.email info@todo.lan
 
-// @host todo.lan:9991
+// @host todo.sns.ge:9991
 // @BasePath /api/v1/
 // @query.collection.format multi
 
