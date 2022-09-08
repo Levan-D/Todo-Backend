@@ -23,6 +23,7 @@ func RegisterHandlers(r fiber.Router, service Service) {
 		route.Get("/", h.getTaskAll)
 		route.Post("/", h.createTask)
 		route.Patch("/:id", h.updateTaskById)
+		route.Put("/:id/position", h.updateTaskPositionById)
 		route.Delete("/:id", h.deleteTaskById)
 	}
 }
@@ -140,6 +141,50 @@ func (h *handler) updateTaskById(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusOK).JSON(res)
+}
+
+type updateTaskPositionInput struct {
+	EndpointID uuid.UUID `json:"endpoint_id" validate:"required"`
+}
+
+// @Tags Tasks
+// @Summary Update a task position
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "ID"
+// @Param input body updateTaskPositionInput true "Input data"
+// @Success 200 {object} response.Message
+// @Failure 400 {object} response.Error
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /lists/{listId}/tasks/{id}/position [put]
+func (h *handler) updateTaskPositionById(c *fiber.Ctx) error {
+	user := c.Locals(auth.LocalUser).(domain.User)
+
+	listId, err := uuid.FromString(c.Params("listId"))
+	if err != nil {
+		return response.NewError(c, errors.StatusBadRequest.LocaleWrapf(err, errors.ErrInvalidID, errors.LocaleInvalidID))
+	}
+
+	id, err := uuid.FromString(c.Params("id"))
+	if err != nil {
+		return response.NewError(c, errors.StatusBadRequest.LocaleWrapf(err, errors.ErrInvalidID, errors.LocaleInvalidID))
+	}
+
+	var input updateTaskPositionInput
+	if err := c.BodyParser(&input); err != nil {
+		return response.NewError(c, err)
+	}
+
+	err = h.service.UpdatePositionByID(user.ID, listId, id, UpdateTaskPositionInput{
+		EndpointID: input.EndpointID,
+	})
+	if err != nil {
+		return response.NewError(c, err)
+	}
+
+	return c.Status(http.StatusOK).JSON(response.Message{Message: "position successfully changed"})
 }
 
 // @Tags Tasks

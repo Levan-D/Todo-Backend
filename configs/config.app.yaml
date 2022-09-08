@@ -1,26 +1,26 @@
 server:
   schema: "https"
-  domain: "todo.lan:9991"
+  domain: "todo.sns.ge:9991"
   host: "0.0.0.0"
   port: 9991
 database:
   host: "127.0.0.1"
   port: 5432
   username: "postgres"
-  password: ""
+  password: "19371937"
   dbname: "todo"
 redis:
   host: "127.0.0.1"
   port: 6379
   password: ""
 jwt:
-  accessSecret: ""
-  refreshSecret: ""
+  accessSecret: "WcGf3BQ6llrtk8EqyCJ0zbYQNqZ9ILtGZNkycoTtCV9vcfn7W7"
+  refreshSecret: "DMpcHmHWchds2KTBSwv2ftpqBt60M8Y0OAepAR9REH1N6t8530"
   accessTTL: 1000h
   refreshTTL: 4320h # 6 month
 smtp:
-  host: ""
+  host: "mail.dreamhost.com"
   port: 465
   from: "TODO"
-  username: ""
-  password: ""
+  username: "todo@sns.ge"
+  password: "mLP1lslIaGJ4Gxkhc3vyw0LGq8o128h"

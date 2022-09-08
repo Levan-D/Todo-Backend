@@ -132,7 +132,7 @@ func (h *handler) updateListById(c *fiber.Ctx) error {
 }
 
 type updateListPositionInput struct {
-	NextPosition int32 `json:"next_position"`
+	EndpointID uuid.UUID `json:"endpoint_id" validate:"required"`
 }
 
 // @Tags Lists
@@ -161,7 +161,7 @@ func (h *handler) updateListPositionById(c *fiber.Ctx) error {
 	}
 
 	err = h.service.UpdatePositionByID(user.ID, id, UpdateListPositionInput{
-		NextPosition: input.NextPosition,
+		EndpointID: input.EndpointID,
 	})
 	if err != nil {
 		return response.NewError(c, err)

@@ -15,6 +15,7 @@ type Service interface {
 	GetAll(userId uuid.UUID, listId uuid.UUID) ([]domain.Task, error)
 	Create(userId uuid.UUID, listId uuid.UUID, input CreateTaskInput) (domain.Task, error)
 	UpdateByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, input UpdateTaskInput) (domain.Task, error)
+	UpdatePositionByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, input UpdateTaskPositionInput) error
 	DeleteByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID) error
 }
 
@@ -25,6 +26,10 @@ type CreateTaskInput struct {
 type UpdateTaskInput struct {
 	Description *string
 	IsCompleted *bool
+}
+
+type UpdateTaskPositionInput struct {
+	EndpointID uuid.UUID
 }
 
 func NewService(repository Repository) Service {
@@ -80,12 +85,78 @@ func (s *service) UpdateByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, i
 		}
 	}
 
+	inputData.CompletedAt = nil
+
 	err := s.repository.UpdateByID(userId, listId, id, inputData)
 	if err != nil {
 		return domain.Task{}, err
 	}
 
 	return s.repository.FindByID(userId, listId, id)
+}
+
+func (s *service) UpdatePositionByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, input UpdateTaskPositionInput) error {
+	current, err := s.repository.FindByID(userId, listId, id)
+	if err != nil {
+		return err
+	}
+
+	endpoint, err := s.repository.FindByID(userId, listId, input.EndpointID)
+	if err != nil {
+		return err
+	}
+
+	if current.ID == endpoint.ID {
+		return nil
+	}
+
+	lists, err := s.repository.FindAll(userId, listId)
+	if err != nil {
+		return err
+	}
+
+	isNextPosition := true
+	if current.Position < endpoint.Position {
+		isNextPosition = true
+	} else if current.Position > endpoint.Position {
+		isNextPosition = false
+	} else {
+		return errors.New("list position has equals")
+	}
+
+	for index, item := range lists {
+		if item.ID == current.ID {
+			lists, err = ArrayDelete(lists, index)
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
+
+	for index, item := range lists {
+		if item.ID == endpoint.ID {
+			indexInc := index
+			if isNextPosition {
+				indexInc++
+			}
+
+			lists, err = ArrayInsert(lists, indexInc, current)
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
+
+	for index, item := range lists {
+		err = s.repository.UpdateByID(userId, listId, item.ID, domain.Task{Position: int32(index + 1)})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *service) DeleteByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID) error {
@@ -98,4 +169,29 @@ func (s *service) DeleteByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID) e
 		return err
 	}
 	return nil
+}
+
+func ArrayInsert(origin []domain.Task, index int, value domain.Task) ([]domain.Task, error) {
+	if index < 0 {
+		return nil, errors.New("Index cannot be less than 0")
+	}
+
+	if index >= len(origin) {
+		return append(origin, value), nil
+	}
+
+	origin = append(origin[:index+1], origin[index:]...)
+	origin[index] = value
+
+	return origin, nil
+}
+
+func ArrayDelete(origin []domain.Task, index int) ([]domain.Task, error) {
+	if index < 0 || index >= len(origin) {
+		return nil, errors.New("Index cannot be less than 0")
+	}
+
+	origin = append(origin[:index], origin[index+1:]...)
+
+	return origin, nil
 }

@@ -2,9 +2,9 @@ name: CI-Staging
 
 on:
   push:
-    branches: [ blank ]
+    branches: [ main ]
   pull_request:
-    branches: [ blank ]
+    branches: [ main ]
 
 jobs:
   deploy:
