@@ -33,6 +33,7 @@ func RegisterHandlers(r fiber.Router, service Service) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param listId path string true "List ID"
 // @Success 200 {object} []domain.Task
 // @Failure 400 {object} response.Error
 // @Failure 404 {object} response.Error
@@ -63,6 +64,7 @@ type createListInput struct {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param listId path string true "List ID"
 // @Param input body createListInput true "Input data"
 // @Success 200 {object} domain.Task
 // @Failure 400 {object} response.Error
@@ -107,6 +109,7 @@ type updateListInput struct {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param listId path string true "List ID"
 // @Param id path string true "ID"
 // @Param input body updateListInput true "Input data"
 // @Success 200 {object} domain.Task
@@ -152,6 +155,7 @@ type updateTaskPositionInput struct {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param listId path string true "List ID"
 // @Param id path string true "ID"
 // @Param input body updateTaskPositionInput true "Input data"
 // @Success 200 {object} response.Message
@@ -192,6 +196,7 @@ func (h *handler) updateTaskPositionById(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param listId path string true "List ID"
 // @Param id path string true "ID"
 // @Success 204 ""
 // @Failure 400 {object} response.Error
