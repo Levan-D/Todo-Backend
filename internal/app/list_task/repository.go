@@ -14,7 +14,7 @@ type Repository interface {
 	FindAll(userId uuid.UUID, listId uuid.UUID) (lists []domain.Task, err error)
 	FindByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID) (item domain.Task, err error)
 	Create(data domain.Task) (uuid.UUID, error)
-	UpdateByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, data domain.Task) (err error)
+	UpdateByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, data map[string]interface{}) (err error)
 	DeleteByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID) error
 	VerifyUserListByID(userId uuid.UUID, listId uuid.UUID) bool
 	GetLastElementPosition(listId uuid.UUID) int32
@@ -47,8 +47,8 @@ func (r repository) Create(data domain.Task) (uuid.UUID, error) {
 	return data.ID, nil
 }
 
-func (r repository) UpdateByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, data domain.Task) (err error) {
-	err = r.db.Where("list_id = ?", listId).Where("id = ?", id).Updates(&data).Error
+func (r repository) UpdateByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, data map[string]interface{}) (err error) {
+	err = r.db.Model(&domain.Task{}).Where("list_id = ?", listId).Where("id = ?", id).Updates(data).Error
 	if err != nil {
 		return err
 	}

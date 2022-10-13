@@ -15,7 +15,7 @@ type Repository interface {
 	FindByID(userId uuid.UUID, id uuid.UUID) (item domain.List, err error)
 	FindByPosition(userId uuid.UUID, position int32) (item domain.List, err error)
 	Create(data domain.List) (uuid.UUID, error)
-	UpdateByID(userId uuid.UUID, id uuid.UUID, data domain.List) (err error)
+	UpdateByID(userId uuid.UUID, id uuid.UUID, data map[string]interface{}) (err error)
 	DeleteByID(userId uuid.UUID, id uuid.UUID) error
 	GetLastElementPosition(userId uuid.UUID) int32
 }
@@ -52,8 +52,8 @@ func (r repository) Create(data domain.List) (uuid.UUID, error) {
 	return data.ID, nil
 }
 
-func (r repository) UpdateByID(userId uuid.UUID, id uuid.UUID, data domain.List) (err error) {
-	err = r.db.Where("user_id = ?", userId).Where("id = ?", id).Updates(&data).Error
+func (r repository) UpdateByID(userId uuid.UUID, id uuid.UUID, data map[string]interface{}) (err error) {
+	err = r.db.Model(&domain.List{}).Where("user_id = ?", userId).Where("id = ?", id).Updates(data).Error
 	if err != nil {
 		return err
 	}

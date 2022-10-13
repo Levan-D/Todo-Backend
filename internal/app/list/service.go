@@ -58,19 +58,27 @@ func (s *service) Create(userId uuid.UUID, input CreateListInput) (domain.List, 
 }
 
 func (s *service) UpdateByID(userId uuid.UUID, id uuid.UUID, input UpdateListInput) (domain.List, error) {
-	inputData := domain.List{}
+	inputData := make(map[string]interface{})
 
 	if input.Color != nil && *input.Color != "" {
-		inputData.Color = input.Color
+		inputData["color"] = input.Color
+	} else if input.Color != nil && *input.Color == "" {
+		inputData["color"] = nil
 	}
 
 	if input.Title != nil && *input.Title != "" {
-		inputData.Title = *input.Title
+		inputData["title"] = *input.Title
+	} else if input.Title != nil && *input.Title == "" {
+		inputData["title"] = nil
 	}
 
-	if input.ReminderAt != nil {
-		inputData.ReminderAt = input.ReminderAt
-		inputData.IsReminded = utils.NewFalse()
+	zeroTime := time.Date(0, 1, 1, 0, 0, 0, 0, time.UTC)
+	if input.ReminderAt != nil && !zeroTime.Equal(*input.ReminderAt) {
+		inputData["reminder_at"] = input.ReminderAt
+		inputData["is_reminded"] = utils.NewFalse()
+	} else if input.ReminderAt != nil && zeroTime.Equal(*input.ReminderAt) {
+		inputData["reminder_at"] = nil
+		inputData["is_reminded"] = utils.NewFalse()
 	}
 
 	err := s.repository.UpdateByID(userId, id, inputData)
@@ -136,7 +144,7 @@ func (s *service) UpdatePositionByID(userId uuid.UUID, id uuid.UUID, input Updat
 	}
 
 	for index, item := range lists {
-		err = s.repository.UpdateByID(userId, item.ID, domain.List{Position: int32(index + 1)})
+		err = s.repository.UpdateByID(userId, item.ID, map[string]interface{}{"position": int32(index + 1)})
 		if err != nil {
 			return err
 		}

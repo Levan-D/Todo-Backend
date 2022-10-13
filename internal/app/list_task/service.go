@@ -69,23 +69,23 @@ func (s *service) UpdateByID(userId uuid.UUID, listId uuid.UUID, id uuid.UUID, i
 		return domain.Task{}, errors.New("user have not permission on this list")
 	}
 
-	inputData := domain.Task{}
+	inputData := make(map[string]interface{})
 
 	if input.Description != nil && *input.Description != "" {
-		inputData.Description = *input.Description
+		inputData["description"] = input.Description
+	} else if input.Description != nil && *input.Description == "" {
+		inputData["description"] = ""
 	}
 
 	if input.IsCompleted != nil {
-		inputData.IsCompleted = input.IsCompleted
+		inputData["is_completed"] = input.IsCompleted
 
 		if *input.IsCompleted == false {
-			inputData.CompletedAt = nil
+			inputData["completed_at"] = nil
 		} else {
-			inputData.CompletedAt = utils.NewTimeNow()
+			inputData["completed_at"] = utils.NewTimeNow()
 		}
 	}
-
-	inputData.CompletedAt = nil
 
 	err := s.repository.UpdateByID(userId, listId, id, inputData)
 	if err != nil {
@@ -150,7 +150,7 @@ func (s *service) UpdatePositionByID(userId uuid.UUID, listId uuid.UUID, id uuid
 	}
 
 	for index, item := range lists {
-		err = s.repository.UpdateByID(userId, listId, item.ID, domain.Task{Position: int32(index + 1)})
+		err = s.repository.UpdateByID(userId, listId, item.ID, map[string]interface{}{"position": int32(index + 1)})
 		if err != nil {
 			return err
 		}
